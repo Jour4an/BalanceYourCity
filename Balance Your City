@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Balance Your City</title>
+<style>
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(to bottom, #001F3D, #004080);
+    margin: 0;
+    padding: 0;
+    color: #FFFFFF;
+  }
+  header {
+    background-color: #002a4d;
+    padding: 20px;
+    text-align: center;
+    color: #FF9936;
+    font-size: 2em;
+    font-weight: 900;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+  .cityscape {
+    background-image: url('https://cdn.pixabay.com/photo/2017/01/31/21/23/city-2023314_1280.png');
+    background-size: cover;
+    background-position: center;
+    height: 200px;
+    margin-bottom: 20px;
+  }
+  .section {
+    background: #FFFFFF;
+    color: #001F3D;
+    border-radius: 16px;
+    padding: 30px;
+    margin: 20px auto;
+    max-width: 1000px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  }
+  .output {
+    font-size: 1em;
+    margin-top: 10px;
+  }
+  .progress-bar {
+    width: 100%;
+    background-color: #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .progress-fill {
+    height: 20px;
+    background-color: #FF9936;
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+  label {
+    font-weight: bold;
+    display: block;
+    margin-top: 15px;
+    font-size: 1.1em;
+  }
+  .service {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+  }
+  .impact {
+    font-size: 0.9em;
+    color: #b30000;
+    margin-left: 10px;
+  }
+  .service input {
+    width: 100px;
+    padding: 6px;
+    font-size: 1em;
+    color: red;
+    font-weight: bold;
+  }
+  .button {
+    background-color: #FF9936;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1em;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+  }
+  .button:hover {
+    background-color: #e6832f;
+  }
+  select, input[type="number"] {
+    padding: 8px;
+    font-size: 1em;
+    margin-right: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+  .locked {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .budget-buttons strong {
+    display: inline-block;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 8px;
+    color: #fff;
+  }
+  .operating { background-color: #0071BF; }
+  .capital { background-color: #FF9936; }
+  .total { background-color: #004080; }
+</style>
+</head>
+<body>
+<header>Balance Your City</header>
+<div class="cityscape"></div>
+<div class="section">
+  <p>You're the budget director of a growing municipality. Costs are rising. The operating budget requires at least a <strong>3% tax increase</strong> to maintain current service levels. Choose your tax increase and make tough decisions to balance the budget and unlock the next year.</p>
+
+  <label for="yearSelect">Year:</label>
+  <select id="yearSelect"></select>
+
+  <label for="taxRate">Select Your Tax Increase (%):</label>
+  <input type="number" id="taxRate" min="0" max="15" value="3">
+
+  <div class="budget-buttons" id="budgetInfo"></div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="output" id="reductionChoices"></div>
+  <div class="output" id="shortfallDisplay"></div>
+  <button class="button" id="submitBtn">Submit Reductions</button>
+  <div class="output" id="result"></div>
+  <button class="button locked" id="nextYearBtn">Next Year</button>
+</div>
+
+<script>
+const yearSelect = document.getElementById('yearSelect');
+const taxRateInput = document.getElementById('taxRate');
+const budgetInfo = document.getElementById('budgetInfo');
+const reductionChoices = document.getElementById('reductionChoices');
+const shortfallDisplay = document.getElementById('shortfallDisplay');
+const progressFill = document.getElementById('progressFill');
+const submitBtn = document.getElementById('submitBtn');
+const result = document.getElementById('result');
+const nextYearBtn = document.getElementById('nextYearBtn');
+
+const data = [];
+const baseRevenue = 9200000;
+for (let y = 1; y <= 5; y++) {
+  const operating = baseRevenue * Math.pow(1.03, y);
+  const capital = y >= 2 ? 5000000 * Math.pow(1.03, y - 1) : 0;
+  data.push({ year: y, operating, capital });
+}
+
+const departments = {
+  "Fire & Police": { base: 2500000, impact: "Longer emergency response times." },
+  "Water & Utilities": { base: 2200000, impact: "Possible boil-water advisories." },
+  "Roads & Snow Clearing": { base: 1800000, impact: "Slower snow removal and pothole repairs." },
+  "Parks & Recreation": { base: 900000, impact: "Fewer community events and delayed playground repairs." },
+  "Waste & Recycling": { base: 700000, impact: "Garbage pickup every 2 weeks instead of weekly." },
+  "Libraries & Community Services": { base: 600000, impact: "Reduced hours and fewer programs." },
+  "Planning & Development": { base: 500000, impact: "Delayed zoning and permit approvals." }
+};
+
+let currentYear = 1;
+
+function formatCurrency(value) {
+  return `$${value.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+}
+
+function populateYearOptions() {
+  yearSelect.innerHTML = '';
+  data.forEach(entry => {
+    const option = document.createElement('option');
+    option.value = entry.year;
+    option.textContent = `Year ${entry.year}`;
+    if (entry.year !== 1) option.disabled = true;
+    yearSelect.appendChild(option);
+  });
+  yearSelect.value = "1";
+}
+
+function updateDisplay() {
+  const year = parseInt(yearSelect.value);
+  const taxRate = parseFloat(taxRateInput.value);
+  const entry = data[year - 1];
+  const revenue = baseRevenue * (1 + taxRate / 100);
+  const extra = revenue - baseRevenue;
+  const capitalCovered = taxRate >= 4 ? Math.min(extra, entry.capital) : 0;
+  const shortfall = entry.operating + entry.capital - revenue;
+
+  budgetInfo.innerHTML = `
+    <strong class='operating'>Operating: ${formatCurrency(entry.operating)}</strong>
+    <strong class='capital'>Capital: ${formatCurrency(entry.capital)}</strong>
+    <strong class='total'>Total: ${formatCurrency(entry.operating + entry.capital)}</strong>
+  `;
+
+  progressFill.style.width = `${(capitalCovered / entry.capital) * 100}%`;
+  shortfallDisplay.innerHTML = `<strong>Remaining Shortfall:</strong> ${formatCurrency(shortfall > 0 ? shortfall : 0)}`;
+
+  reductionChoices.innerHTML = '<strong>Choose reductions to cover the shortfall:</strong>';
+  for (const [dept, info] of Object.entries(departments)) {
+    const adjusted = info.base * Math.pow(1.03, year);
+    reductionChoices.innerHTML += `
+      <div class="service">
+        <span>${dept} (${formatCurrency(adjusted)}):</span>
+        <input type="number" step="10000" min="0" max="${Math.round(adjusted)}" value="0" id="${dept.replace(/\\s|&/g, '')}" oninput="showImpact('${dept}', this.value)">
+        <div class="impact" id="impact-${dept.replace(/\\s|&/g, '')}"></div>
+      </div>
+    `;
+  }
+  result.innerHTML = '';
+  nextYearBtn.classList.add('locked');
+}
+
+function showImpact(dept, value) {
+  const impactDiv = document.getElementById(`impact-${dept.replace(/\\s|&/g, '')}`);
+  const amount = parseInt(value) || 0;
+  if (amount > 0) {
+    let severity = Math.floor(amount / 50000);
+    impactDiv.textContent = `Consequence: ${departments[dept].impact} Severity Level: ${severity}`;
+  } else {
+    impactDiv.textContent = '';
+  }
+  updateShortfall();
+}
+
+function updateShortfall() {
+  const year = parseInt(yearSelect.value);
+  const taxRate = parseFloat(taxRateInput.value);
+  const entry = data[year - 1];
+  const revenue = baseRevenue * (1 + taxRate / 100);
+  let shortfall = entry.operating + entry.capital - revenue;
+  for (const dept of Object.keys(departments)) {
+    const input = document.getElementById(dept.replace(/\\s|&/g, ''));
+    shortfall -= parseInt(input.value) || 0;
+  }
+  shortfallDisplay.innerHTML = `<strong>Remaining Shortfall:</strong> ${formatCurrency(shortfall > 0 ? shortfall : 0)}`;
+}
+
+function calculateReductions() {
+  const year = parseInt(yearSelect.value);
+  const taxRate = parseFloat(taxRateInput.value);
+  const entry = data[year - 1];
+  const revenue = baseRevenue * (1 + taxRate / 100);
+  const shortfall = entry.operating + entry.capital - revenue;
+  let totalReduction = 0;
+  let breakdown = '';
+
+  for (const dept of Object.keys(departments)) {
+    const input = document.getElementById(dept.replace(/\\s|&/g, ''));
+    const value = parseInt(input.value) || 0;
+    totalReduction += value;
+    if (value > 0) {
+      breakdown += `<li>${dept}: ${formatCurrency(value)}</li>`;
+    }
+  }
+
+  if (totalReduction >= shortfall) {
+    result.innerHTML = `<strong>✅ Success!</strong> You've balanced the budget for Year ${year}.<br><strong>Reductions:</strong><ul>${breakdown}</ul>`;
+    nextYearBtn.classList.remove('locked');
+    yearSelect.options[year].disabled = false;
+  } else {
+    result.innerHTML = `<strong>🚨 Not enough reductions.</strong> You still need to cut ${formatCurrency(shortfall - totalReduction)}.`;
+  }
+}
+
+function goToNextYear() {
+  if (!nextYearBtn.classList.contains('locked')) {
+    currentYear++;
+    if (currentYear <= 5) {
+      yearSelect.value = currentYear;
+      updateDisplay();
+    } else {
+      result.innerHTML = `<strong>🎉 You've completed all 5 years! Your municipality is thriving thanks to your leadership.`;
+      nextYearBtn.classList.add('locked');
+    }
+  }
+}
+
+yearSelect.addEventListener('change', updateDisplay);
+taxRateInput.addEventListener('input', updateDisplay);
+submitBtn.addEventListener('click', calculateReductions);
+nextYearBtn.addEventListener('click', goToNextYear);
+
+populateYearOptions();
+updateDisplay();
+</script>
+</body>
+</html>
