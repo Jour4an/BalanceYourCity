@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Balance Your City</title>
+<title>Frozen Tax Budget Game</title>
 <style>
   body {
     font-family: 'Montserrat', sans-serif;
@@ -117,10 +118,10 @@
 </style>
 </head>
 <body>
-<header>Balance Your City</header>
+<header>Frozen Tax Budget Game</header>
 <div class="cityscape"></div>
 <div class="section">
-  <p>You're the budget director of a growing municipality. Costs are rising. The operating budget requires at least a <strong>3% tax increase</strong> to maintain current service levels. Choose your tax increase and make tough decisions to balance the budget and unlock the next year.</p>
+  <p>You're the budget director of a growing municipality. Costs are rising. The operating budget requires at least a 3% tax increase to maintain current service levels. Choose your tax increase and make tough decisions to balance the budget and unlock the next year.</p>
 
   <label for="yearSelect">Year:</label>
   <select id="yearSelect"></select>
@@ -208,8 +209,8 @@ function updateDisplay() {
     reductionChoices.innerHTML += `
       <div class="service">
         <span>${dept} (${formatCurrency(adjusted)}):</span>
-        <input type="number" step="10000" min="0" max="${Math.round(adjusted)}" value="0" id="${dept.replace(/\\s|&/g, '')}" oninput="showImpact('${dept}', this.value)">
-        <div class="impact" id="impact-${dept.replace(/\\s|&/g, '')}"></div>
+        <input type="number" step="10000" min="0" max="${Math.round(adjusted)}" value="0" id="${dept.replace(/\s|&/g, '')}" oninput="showImpact('${dept}', this.value)">
+        <div class="impact" id="impact-${dept.replace(/\s|&/g, '')}"></div>
       </div>
     `;
   }
@@ -218,7 +219,7 @@ function updateDisplay() {
 }
 
 function showImpact(dept, value) {
-  const impactDiv = document.getElementById(`impact-${dept.replace(/\\s|&/g, '')}`);
+  const impactDiv = document.getElementById(`impact-${dept.replace(/\s|&/g, '')}`);
   const amount = parseInt(value) || 0;
   if (amount > 0) {
     let severity = Math.floor(amount / 50000);
@@ -236,7 +237,7 @@ function updateShortfall() {
   const revenue = baseRevenue * (1 + taxRate / 100);
   let shortfall = entry.operating + entry.capital - revenue;
   for (const dept of Object.keys(departments)) {
-    const input = document.getElementById(dept.replace(/\\s|&/g, ''));
+    const input = document.getElementById(dept.replace(/\s|&/g, ''));
     shortfall -= parseInt(input.value) || 0;
   }
   shortfallDisplay.innerHTML = `<strong>Remaining Shortfall:</strong> ${formatCurrency(shortfall > 0 ? shortfall : 0)}`;
@@ -252,7 +253,7 @@ function calculateReductions() {
   let breakdown = '';
 
   for (const dept of Object.keys(departments)) {
-    const input = document.getElementById(dept.replace(/\\s|&/g, ''));
+    const input = document.getElementById(dept.replace(/\s|&/g, ''));
     const value = parseInt(input.value) || 0;
     totalReduction += value;
     if (value > 0) {
