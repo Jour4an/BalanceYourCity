@@ -4,91 +4,1120 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Balance Your City</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
-  body { font-family: 'Montserrat', sans-serif; background: #f4f4f4; margin: 0; padding: 0; color: #001F3D; }
-  .section { background: #fff; border-radius: 16px; padding: 20px; margin: 20px auto; max-width: 1000px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); padding-bottom: 360px; }
-
-  h1 { color: #001F3D; font-size: 2em; font-weight: 900; margin-bottom: 10px; text-align: center; }
-  .intro-text { font-size: 1em; color: #333; margin-bottom: 20px; line-height: 1.4; text-align: center; }
-
-  .progress-bar { display: flex; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; }
-  .year { flex: 1; text-align: center; padding: 10px; border-radius: 8px; background: #ddd; margin: 5px; font-weight: bold; color: #000; cursor: pointer; }
-  .year.active, .year.completed { background: linear-gradient(to bottom, #FF9936, #FF4713); color: #fff; }
-
-  .floating-controls {
-    position: fixed; bottom: 0; left: 0; width: 100%;
-    background: #fff; padding: 10px; box-shadow: 0 -4px 12px rgba(0,0,0,0.15);
-    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; z-index: 100;
+  /* --- Color Palette --- */
+  :root {
+    /* Primary Blue Gradient */
+    --primary-color: #0071bf; /* Vibrant Blue (Your requested blue bottom) */
+    --primary-light: #4c96d7;
+    --primary-dark: #004d80;
+    --accent-color: #FF9936; /* Orange (Your requested orange top) */
+    --bg-light: #e9ecf2;
+    --text-dark: #1a1a2e;
+    --red-alert: #e53935;
+    --green-success: #43a047;
+    
+    /* PROJECT BUTTON GRADIENT COLORS */
+    --crit-grad-start: #FF9936; /* Your requested #FF9936 */
+    --crit-grad-end: #FF4713;   /* Your requested #FF4713 */
+    --qol-grad-start: #66B2FF;  /* Bright light blue */
+    --qol-grad-end: #0071bf;    /* Your requested #0071bf */
+    
+    --unselected-text-color: #fff; 
   }
-  .status { border-radius: 8px; font-weight: 700; color: #fff; text-align: center; padding: 10px; font-size: 1em; flex: 1 1 100%; }
-  #guidanceText { color:#333;font-weight:bold;text-align:center;font-size:0.9em;flex:1 1 100%; }
 
-  .button { background: linear-gradient(to bottom, #FF9936, #FF4713); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.85em; padding: 8px 10px; flex: 1; min-width: 100px; }
-  .reserve-section .button, #reserveBtn { background: linear-gradient(to bottom, #64b5f6, #0071BF); }
+  /* --- Base Styles --- */
+  body { 
+    font-family: 'Montserrat', sans-serif; 
+    background: var(--bg-light); 
+    margin: 0; 
+    padding: 0; 
+    color: var(--text-dark); 
+  }
+  .section { 
+    background: #fff; 
+    border-radius: 20px; 
+    padding: 40px; 
+    margin: 25px auto; 
+    max-width: 1000px; 
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1); 
+    padding-bottom: 250px; 
+  }
+  
+  /* DISCLAIMER STYLE */
+  .disclaimer {
+      background: #fff3cd; 
+      color: #856404; 
+      border: 1px solid #ffeeba;
+      border-radius: 12px; 
+      padding: 15px;
+      margin: 25px auto;
+      max-width: 1000px; 
+      font-size: 0.9em;
+      text-align: center;
+      font-weight: 600;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  }
 
-  input[type="range"] { width: 100%; appearance: none; height: 10px; border-radius: 5px; background: var(--track-color, #ccc); outline: none; }
-  input[type="range"]::-webkit-slider-thumb { appearance: none; width: 28px; height: 28px; border-radius: 50%; background: #0071BF; border: 3px solid #fff; cursor: pointer; margin-top: -10px; }
+  /* --- Typography --- */
+  h1 { 
+    color: var(--primary-color); 
+    font-size: 2.6em; 
+    font-weight: 900; 
+    margin-bottom: 5px; 
+    text-align: center; 
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  .tagline {
+      display: block;
+      text-align: center;
+      font-size: 1.1em;
+      color: #777;
+      margin-bottom: 30px;
+      font-weight: 600;
+  }
+  
+  /* Main Section Header */
+  h3 {
+      color: var(--primary-dark);
+      border-bottom: 3px solid var(--primary-color); 
+      padding-bottom: 8px;
+      margin-top: 50px; 
+      font-weight: 900; 
+      font-size: 1.6em; 
+  }
+  
+  .intro-text { 
+    font-size: 1.05em; 
+    color: #444; 
+    margin-bottom: 30px; 
+    line-height: 1.6; 
+    text-align: center; 
+  }
 
-  .slider-card { background: #f9f9f9; border-radius: 12px; padding: 30px; margin-bottom: 30px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-  .slider-circle { width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 800; color: #fff; font-size: 1em; background: linear-gradient(to bottom, #888, #666); border: 3px solid #fff; flex-shrink: 0; }
-  .slider-content { flex: 1; min-width: 200px; }
-  .slider-content label { display: block; margin-bottom: 12px; font-weight: 700; }
+  /* --- Progress Bar --- */
+  .progress-bar { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-bottom: 30px; 
+    flex-wrap: wrap; 
+    background: #f0f4f8; 
+    padding: 5px;
+    border-radius: 15px; 
+  }
+  .year { 
+    flex: 1; 
+    text-align: center; 
+    padding: 10px 5px; 
+    border-radius: 10px; 
+    background: #cfd8dc; 
+    margin: 3px; 
+    font-weight: 700; 
+    color: #333; 
+    cursor: default;
+    transition: all 0.3s ease;
+  }
+  .year.active { 
+    background: linear-gradient(to right, var(--primary-color), var(--primary-light)); 
+    color: #fff; 
+    box-shadow: 0 3px 10px rgba(0, 113, 191, 0.5);
+  }
+  .year.completed {
+    background: var(--green-success); 
+    color: #fff;
+  }
 
-  .projects { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 20px 0; }
-  .project-btn { background: linear-gradient(to bottom, #0071BF, #001F3D); color: #fff; border: 5px solid #fff; padding: 15px; height: 130px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 0.9em; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.2s ease; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-  .project-btn:hover { transform: scale(1.05); }
-  .project-btn.selected { background: linear-gradient(to bottom, #28a745, #1b5e20); color: #fff; border-color: #fff; }
-  .project-btn.completed { background: #ccc; color: #666; opacity: 0.6; cursor: not-allowed; }
-  .project-btn.critical { border: 5px solid #FF9936; }
-  .project-name { font-size: 0.9em; font-weight: 800; margin-bottom: 4px; }
-  .project-cost { font-size: 0.8em; margin-bottom: 6px; }
-  .required-text { color: #FF9936; font-size: 0.75em; margin-top: 4px; }
+  /* --- Floating Controls (Footer) --- */
+  .floating-controls {
+    position: fixed; 
+    bottom: 0; 
+    left: 0; 
+    width: 100%;
+    background: var(--text-dark); 
+    padding: 15px 15px 10px; 
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+    display: flex; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 15px; 
+    z-index: 100;
+  }
+  
+  /* Status Display Styling - MOVED TO TOP */
+  #statusDisplay { 
+    order: -2; 
+    flex: 1 1 100%; 
+    max-width: 900px;
+    margin-bottom: 5px; 
+    border-radius: 12px; 
+    font-weight: 900; 
+    color: #fff; 
+    text-align: center; 
+    padding: 15px 20px; 
+    font-size: 0.9em; 
+    transition: background 0.3s;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.4), inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+    line-height: 1.2;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  #statusDisplay strong {
+      display: block;
+      font-size: 1.5em; 
+      margin-top: 5px;
+      line-height: 1;
+  }
+  
+  /* Reserve Fund Display - Integrated into the button group */
+  .reserve-display-group {
+      display: flex;
+      gap: 10px;
+      flex: 1 1 300px; 
+      min-width: 300px;
+      order: -1; 
+  }
+  #reserveDisplayCard { 
+    background: var(--primary-dark); 
+    color: #ecf0f1; 
+    border-radius: 10px; 
+    padding: 10px 15px; 
+    flex-grow: 1; 
+    text-align: center; 
+    font-size: 0.85em;
+    font-weight: 600;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.2;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+  #reserveDisplayCard strong {
+      display: block;
+      font-size: 1.4em;
+      font-weight: 900;
+      color: #FFFFFF; 
+      margin-top: 3px;
+  }
+  
+  #guidanceText { 
+    color:#b0bec5; 
+    font-weight:600;
+    text-align:center;
+    font-size:0.95em;
+    flex:1 1 100%;
+    padding: 5px 0;
+    order: 99; 
+  }
 
-  @media (max-width: 600px) {
-    .floating-controls { flex-direction: column; align-items: stretch; padding: 10px; }
-    .button { width: 100%; }
-    .status, #guidanceText { width: 100%; }
-    .section { padding-bottom: 380px; }
+  /* Action Buttons */
+  #resetBtn { 
+    background: linear-gradient(to right, var(--accent-color), #ff5722); 
+    color: white; 
+    border: none; 
+    border-radius: 10px; 
+    cursor: pointer; 
+    font-weight: 700; 
+    font-size: 1em; 
+    padding: 14px 20px; 
+    flex: 1 1 120px; 
+    min-width: 130px; 
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 153, 54, 0.3);
+  }
+  #resetBtn:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(255, 71, 19, 0.5);
+  }
+  
+  /* Reserve & Use Reserve Buttons (Primary Blue Gradient) */
+  #reserveBtn, #useReserveBtn { 
+    background: linear-gradient(to right, var(--primary-light), var(--primary-color)); 
+    box-shadow: 0 4px 15px rgba(0, 113, 191, 0.3);
+    color: white; 
+    border: none; 
+    border-radius: 10px; 
+    cursor: pointer; 
+    font-weight: 700; 
+    font-size: 1em; 
+    padding: 14px 20px; 
+    flex: 1 1 120px; 
+    min-width: 130px; 
+    transition: all 0.3s ease;
+  }
+  #reserveBtn:hover:not(:disabled), #useReserveBtn:hover:not(:disabled) {
+      box-shadow: 0 6px 18px rgba(0, 113, 191, 0.5);
+      background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
+  }
+  
+  /* Next Year Button (Success Green Gradient) */
+  #nextYearBtn {
+    background: linear-gradient(to right, var(--green-success), #388e3c); 
+    box-shadow: 0 4px 15px rgba(67, 160, 71, 0.3);
+    color: white; 
+    border: none; 
+    border-radius: 10px; 
+    cursor: pointer; 
+    font-weight: 700; 
+    font-size: 1em; 
+    padding: 14px 20px; 
+    flex: 1 1 120px; 
+    min-width: 130px; 
+    transition: all 0.3s ease;
+  }
+  #nextYearBtn:hover:not(:disabled) {
+      box-shadow: 0 6px 18px rgba(61, 139, 64, 0.5);
+  }
+
+  .button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+  }
+
+  /* --- ENHANCED SLIDERS STYLES --- */
+  input[type="range"] { 
+    -webkit-appearance: none;
+    width: 100%;
+    height: 12px;
+    background: var(--bg-light); 
+    border-radius: 6px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    transition: background 0.2s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb { 
+    -webkit-appearance: none; 
+    width: 32px; 
+    height: 32px; 
+    border-radius: 50%; 
+    background: var(--primary-color); 
+    border: 5px solid #fff; 
+    cursor: grab; 
+    margin-top: -10px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: background 0.3s, transform 0.1s ease; 
+  }
+  input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(1.15);
+      cursor: grabbing;
+  }
+
+  /* Dynamic Thumb Colors */
+  input[type="range"].cut-slider::-webkit-slider-thumb {
+      background: var(--red-alert); 
+  }
+  input[type="range"].increase-slider::-webkit-slider-thumb {
+      background: var(--green-success); 
+  }
+  input[type="range"].neutral-slider::-webkit-slider-thumb {
+      background: #78909c; 
+  }
+  
+  .tax-adjustment-card {
+      background: #f7fcff; 
+      border: 1px solid #e0f7fa;
+      box-shadow: 0 8px 20px rgba(0, 113, 191, 0.15);
+  }
+
+
+  /* --- Card Layout --- */
+  .slider-card { 
+    background: #f9f9f9; 
+    border-radius: 16px; 
+    padding: 30px; 
+    margin-bottom: 30px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+    display: flex; 
+    align-items: center; 
+    gap: 30px; 
+    flex-wrap: wrap; 
+    border-left: 6px solid var(--primary-color); 
+    transition: all 0.2s ease;
+  }
+  .slider-card:hover {
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  }
+  .slider-card.tax-adjustment-card { border-left: 6px solid var(--accent-color); }
+
+  .slider-circle { 
+    width: 75px; 
+    height: 75px; 
+    border-radius: 50%; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    font-weight: 900; 
+    color: #fff; 
+    font-size: 1.2em; 
+    background: linear-gradient(to bottom, #999, #777); 
+    border: 5px solid #fff; 
+    flex-shrink: 0; 
+    box-shadow: 0 5px 12px rgba(0,0,0,0.25);
+    transition: background 0.3s;
+  }
+  .slider-content { 
+    flex: 1; 
+    min-width: 250px; 
+  }
+  .slider-content label { 
+    display: block; 
+    margin-bottom: 12px; 
+    font-weight: 800; 
+    font-size: 1.2em;
+    color: var(--primary-dark);
+  }
+
+  /* --- Project Buttons --- */
+  .project-group-container h4 {
+      border-bottom: 3px solid var(--primary-color);
+      padding-bottom: 8px;
+      margin-top: 40px;
+      margin-bottom: 25px;
+      color: var(--primary-dark);
+      font-weight: 700; 
+      font-size: 1.2em; 
+  }
+  .projects { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+    gap: 20px; 
+  }
+  .project-btn { 
+    color: var(--unselected-text-color); 
+    padding: 20px; 
+    height: 150px; 
+    border-radius: 15px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+    transition: all 0.2s ease; 
+    cursor: pointer;
+    text-align: left;
+    
+    /* DEFAULT (Additional/Quality-of-Life) COLORS - UNSELECTED (YOUR BLUE GRADIENT) */
+    background: linear-gradient(to bottom, var(--qol-grad-start), var(--qol-grad-end)); 
+    border: 4px solid var(--primary-color); 
+  }
+  
+  /* CRITICAL/REQUIRED Projects - Unselected State (YOUR ORANGE GRADIENT) */
+  .project-btn.required {
+      background: linear-gradient(to bottom, var(--crit-grad-start), var(--crit-grad-end));
+      border-color: var(--crit-grad-end);
+  }
+
+  .project-btn:hover:not(.completed):not(.selected) { 
+    transform: translateY(-2px); 
+    border-color: #fff; /* White glow on hover */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* SELECTED Button - Additional/Quality-of-Life (Use Reserve Gradient - Darker Blue) */
+  .project-btn.selected:not(.required) { 
+    background: linear-gradient(to right, var(--primary-light), var(--primary-color)); /* BLUE GRADIENT */
+    color: #fff;
+    border-color: #fff;
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.4), 0 5px 15px rgba(76, 150, 215, 0.6);
+    transform: scale(1.0); 
+  }
+  
+  .project-btn.completed { 
+    background: #e0e0e0; 
+    color: #757575; 
+    opacity: 0.8; 
+    cursor: not-allowed;
+    text-decoration: line-through;
+    border-color: #bdbdbd;
+    box-shadow: none;
+  }
+  
+  /* CRITICAL/REQUIRED Selected Project (Reset Year Gradient - Orange/Red) */
+  .project-btn.required.selected {
+      border-color: #fff;
+      background: linear-gradient(to right, var(--crit-grad-end), var(--red-alert)); /* Using the darker orange end as the start of the selected gradient */
+      color: #fff;
+      box-shadow: inset 0 3px 5px rgba(0,0,0,0.4), 0 5px 15px rgba(255, 153, 54, 0.6);
+  }
+  
+  /* Make the required text visible and strong in all states */
+  .required-text { 
+    font-size: 0.9em; 
+    margin-top: 5px; 
+    font-weight: 900;
+  }
+
+  .project-btn .required-text,
+  .project-btn:not(.required):not(.selected) {
+      color: #fff; /* Ensure white text on all dark gradients */
+  }
+
+  .project-name { 
+    font-size: 1.15em; 
+    font-weight: 900; 
+    margin-bottom: 8px; 
+  }
+  .project-cost { 
+    font-size: 1em; 
+    margin-bottom: 8px; 
+    font-weight: 700;
+  }
+
+
+  /* --- Mobile Adjustments --- */
+  @media (max-width: 700px) {
+    .floating-controls { flex-direction: column; align-items: stretch; padding: 15px 10px; gap: 10px; }
+    .button { width: 100%; flex: 1 1 auto; font-size: 0.9em; padding: 12px; }
+    #statusDisplay { width: 100%; min-width: unset; flex: 1 1 auto; padding: 15px; font-size: 0.85em; }
+    #statusDisplay strong { font-size: 1.3em; }
+    #guidanceText { width: 100%; font-size: 0.85em; }
+    .section { padding-bottom: 350px; padding: 20px; } 
+    .slider-card { padding: 20px; flex-direction: column; align-items: center; text-align: center; gap: 15px; }
+    .slider-content { min-width: unset; width: 100%; }
+    .slider-content label { text-align: left; width: 100%; }
+    .reserve-display-group { flex-direction: column; min-width: unset; }
   }
 </style>
 </head>
 <body>
+
+<div class="disclaimer">
+    ⚠️ **DISCLAIMER:** The dollar figures used in this simulator are **NOT** actual budget numbers. This is an abstract model designed only to illustrate the *principles* of municipal finance.
+</div>
 <div class="section">
   <h1>Balance Your City</h1>
-  <p class="intro-text">Welcome to the Brooks Budget Simulator! Adjust taxes, select capital projects, and manage department budgets to balance the city’s finances while meeting community needs.</p>
-
+  <span class="tagline">Learn how to budget a municipality.</span>
+  <p class="intro-text">Welcome to the Brooks Budget Simulator! Adjust taxes, select capital projects, and manage department budgets to balance the city’s finances while meeting community needs. </p>
+  
   <div class="progress-bar" id="yearBar"></div>
 
-  <div class="slider-card">
+  <div class="slider-card tax-adjustment-card">
     <div class="slider-circle" id="taxCircle">3%</div>
     <div class="slider-content">
-      <label><strong>Tax Increase</strong></label>
-      <p style="font-size:0.9em;color:#555;margin-bottom:10px;">Inflation means costs rise yearly. A 3% tax increase keeps services stable.</p>
+      <label><strong>Property Tax Adjustment</strong></label>
+      <p style="font-size:0.95em;color:#555;margin-bottom:15px; line-height: 1.4;">The total change to your property tax rate. **3%** covers the expected rate of inflation. Higher means more revenue; lower means more money stays in the taxpayer's wallet.</p>
       <input type="range" id="taxRate" min="0" max="25" value="3">
     </div>
   </div>
-
+  
   <h3>Select Capital Projects</h3>
-  <p style="margin-bottom:10px;font-size:0.95em;color:#333;">Select a capital project you would like for your community. Some critical infrastructure is required by certain years to maintain essential services.</p>
-  <div class="projects" id="projectButtons"></div>
-  <p style="margin-top:10px;font-size:0.85em;color:#555;">Disclaimer: These are popular capital projects community members said they wanted in the 2026 Brooks Budget Survey.</p>
+  <p style="margin-bottom:10px;font-size:0.95em;color:#333;">Select a capital project you would like for your community. Projects are funded in the year they are selected.</p>
+  
+  <div id="projectButtons">
+      </div>
+  
+  <p style="margin-top:10px;font-size:0.85em;color:#555;">**Disclaimer:** Project names and costs are illustrative examples, not reflective of actual city plans or estimates.</p>
 
   <h3>Adjust Department Budgets</h3>
   <div id="departmentSliders"></div>
 </div>
 
 <div class="floating-controls">
-  <strong id="statusDisplay" class="status">Shortfall: $0</strong>
-  <p id="guidanceText"></p>
-  <button class="button" id="reserveBtn" style="display:none;">Add Surplus to Reserve</button>
-  <button class="button" disabled>Reserve Fund: $<span id="reserveDisplay">0</span></button>
-  <button class="button" id="useReserveBtn">Use Reserve Fund</button>
+  <div id="statusDisplay" class="status">Shortfall: <strong>$0</strong></div>
+  
+  <div class="reserve-display-group">
+    <div id="reserveDisplayCard">Reserve Fund: <strong>$<span id="reserveDisplay">0</span></strong></div>
+    <button class="button" id="reserveBtn" style="display:none;">Add Surplus to Reserve</button>
+    <button class="button" id="useReserveBtn" disabled>Use Reserve</button>
+  </div>
+  
   <button class="button" id="resetBtn">Reset Year</button>
   <button class="button" id="nextYearBtn" style="display:none;">Next Year</button>
+  <p id="guidanceText"></p>
 </div>
 
 <script>
-const yearBar=document.getElementById('yearBar'),taxRateInput=document.getElementById('taxRate'),taxCircle=document.getElementById('taxCircle'),projectButtonsContainer=document.getElementById('projectButtons'),departmentSlidersContainer=document.getElementById('departmentSliders'),statusDisplay=document.getElementById('statusDisplay'),reserveDisplay=document.getElementById('reserveDisplay'),reserveBtn=document.getElementById('reserveBtn'),useReserveBtn=document.getElementById('useReserveBtn'),nextYearBtn=document.getElementById('nextYearBtn'),guidanceText=document.getElementById('guidanceText');let currentYear=1,selectedProjects=[],completedProjects=[],reserve=0,surplus=0,shortfall=0;const operatingCost=31500000,projects=[{name:"Recreation Center",cost:2000000},{name:"Road Improvements",cost:3500000},{name:"Water Treatment Upgrade",cost:4000000,deadline:4,critical:true},{name:"Library Renovation",cost:1500000},{name:"Fire Station Upgrade",cost:2500000},{name:"Community Water Park",cost:1750000},{name:"Sports Complex",cost:3000000},{name:"Public Transit",cost:2250000},{name:"Bike Path Network",cost:1250000},{name:"City Hall Renovation",cost:3500000},{name:"Municipally Owned Shopping Mall",cost:2750000},{name:"New Fire Truck",cost:1000000,deadline:2,critical:true}];const departments=["RCMP/Policing Services","Snow & Ice Removal","Road & Pavement Maintenance","Parks & Playgrounds","Recreation Facilities & Programs","Community Development","Storm Water Maintenance","Municipal Public Safety","Athletic Fields"];function formatCurrency(e){return`$${Number(e).toLocaleString()}`}function renderYearBar(){yearBar.innerHTML="";for(let i=1;i<=4;i++){const y=document.createElement("div");y.className="year";y.textContent=`Year ${i}`;if(i===currentYear)y.classList.add("active");else if(i<currentYear)y.classList.add("completed");y.onclick=()=>{if(i<currentYear){currentYear=i;updateProgressBar();createProjectButtons();createDepartmentSliders();updateStatus()}};yearBar.appendChild(y)}}function updateProgressBar(){document.querySelectorAll(".year").forEach((e,t)=>{e.classList.remove("active","completed");if(t+1===currentYear)e.classList.add("active");else if(t+1<currentYear)e.classList.add("completed")})}function updateTaxSliderColor(){const e=parseInt(taxRateInput.value);let trackColor=e<=3?"#ccc":e>=4?"#b30000":"#ccc";taxRateInput.style.setProperty("--track-color",trackColor);taxCircle.textContent=`${e}%`;taxCircle.style.background=e>3?"linear-gradient(to bottom,#b30000,#800000)":"linear-gradient(to bottom,#0071BF,#001F3D)"}function createProjectButtons(){projectButtonsContainer.innerHTML="";projects.forEach((e,t)=>{const n=document.createElement("button");n.className="project-btn";let content=`<div class="project-name">${e.name}</div><div class="project-cost">${formatCurrency(e.cost)}</div>`;if(e.critical){content+=`<div class="required-text">Required by Year ${e.deadline}</div>`;n.classList.add("critical")}n.innerHTML=content;if(completedProjects.includes(t)){n.classList.add("completed");n.disabled=true}else{n.onclick=()=>{n.classList.toggle("selected");n.classList.contains("selected")?selectedProjects.push(t):selectedProjects=selectedProjects.filter(i=>i!==t);updateStatus()}}projectButtonsContainer.appendChild(n)})}function createDepartmentSliders(){departmentSlidersContainer.innerHTML="";departments.forEach(e=>{const id=e.replace(/\s|&/g,""),card=document.createElement("div");card.className="slider-card";card.innerHTML=`<div class="slider-circle" id="circle-${id}">100%</div><div class="slider-content"><label><strong>${e}</strong></label><input type="range" min="50" max="150" value="100" step="10" id="${id}"><div id="impact-${id}" style="font-size:0.9em;color:#555;">No change to service levels.</div></div>`;departmentSlidersContainer.appendChild(card);document.getElementById(id).addEventListener("input",()=>{const val=parseInt(document.getElementById(id).value);document.getElementById(`circle-${id}`).textContent=`${val}%`;const impact=document.getElementById(`impact-${id}`),slider=document.getElementById(id);let color=val<100?"linear-gradient(to bottom,#b30000,#800000)":val>100?"linear-gradient(to bottom,#28a745,#1b5e20)":"linear-gradient(to bottom,#888,#666)";document.getElementById(`circle-${id}`).style.background=color;slider.style.setProperty("--track-color",val<100?"#b30000":val>100?"#28a745":"#ccc");impact.textContent=val<100?"Reduced service quality.":val>100?"Improved service quality.":"No change to service levels.";updateStatus()})})}function updateStatus(){updateTaxSliderColor();const tax=parseFloat(taxRateInput.value);const revenue=3e7+500000*tax;let projectCost=selectedProjects.reduce((sum,i)=>sum+projects[i].cost,0);shortfall=operatingCost+projectCost-revenue;let deptAdj=0;departments.forEach(e=>{const val=parseInt(document.getElementById(e.replace(/\s|&/g,"")).value);deptAdj+=val<100?-250000*((100-val)/10):val>100?250000*((val-100)/10):0});shortfall+=deptAdj;surplus=shortfall<0?Math.abs(shortfall):0;shortfall=shortfall<0?0:shortfall;statusDisplay.textContent=shortfall>0?`Shortfall: ${formatCurrency(shortfall)}`:`Surplus: ${formatCurrency(surplus)}`;statusDisplay.style.background=shortfall>0?"linear-gradient(to bottom,#b30000,#800000)":"linear-gradient(to bottom,#28a745,#1b5e20)";guidanceText.textContent=shortfall>0?"You must cover the shortfall by lowering a department’s service levels or increasing taxes.":surplus>0?"You can add surplus dollars to reserve to cover capital budgets in future years.":"";reserveDisplay.textContent=reserve.toLocaleString();reserveBtn.style.display=surplus>0?"inline-block":"none";nextYearBtn.style.display=shortfall===0?"inline-block":"none"}reserveBtn.addEventListener("click",()=>{reserve+=surplus;surplus=0;statusDisplay.textContent="Surplus: $0";reserveDisplay.textContent=reserve.toLocaleString();reserveBtn.style.display="none"});useReserveBtn.addEventListener("click",()=>{if(reserve>0){if(shortfall>0){if(reserve>=shortfall){reserve-=shortfall;surplus=reserve;shortfall=0}else{shortfall-=reserve;reserve=0}}else{surplus+=reserve;reserve=0}statusDisplay.textContent=shortfall>0?`Shortfall: ${formatCurrency(shortfall)}`:`Surplus: ${formatCurrency(surplus)}`;statusDisplay.style.background=shortfall>0?"linear-gradient(to bottom,#b30000,#800000)":"linear-gradient(to bottom,#28a745,#1b5e20)";reserveDisplay.textContent=reserve.toLocaleString()}});nextYearBtn.addEventListener("click",()=>{for(let i=0;i<projects.length;i++){if(projects[i].critical&&currentYear===projects[i].deadline&&!completedProjects.includes(i)&&!selectedProjects.includes(i)){alert(`⚠️ You cannot proceed! ${projects[i].name} must be completed by Year ${projects[i].deadline}.`);return}}selectedProjects.forEach(i=>{completedProjects.push(i)});selectedProjects=[];currentYear++;alert(`You’re now in Year ${currentYear}`);taxRateInput.value=3;if(currentYear>4){showSummary()}else{renderYearBar();createProjectButtons();createDepartmentSliders();updateStatus()}});function showSummary(){document.body.innerHTML=`<div style="padding:20px;font-family:Montserrat;"><h1>Budget Summary</h1><p>All years completed!</p><h3>Projects Completed:</h3><ul>${completedProjects.map(i=>`<li>${projects[i].name}</li>`).join('')}</ul><h3>Reserve Fund:</h3><p>$${reserve.toLocaleString()}</p></div>`}resetBtn.addEventListener("click",()=>{taxRateInput.value=3;selectedProjects=[];completedProjects=[];currentYear=1;renderYearBar();createProjectButtons();createDepartmentSliders();updateStatus()});taxRateInput.addEventListener("input",updateStatus);renderYearBar();createProjectButtons();createDepartmentSliders();updateStatus();
+  // --- DOM Elements ---
+  const taxRateInput = document.getElementById('taxRate');
+  const taxCircle = document.getElementById('taxCircle');
+  const projectButtonsContainer = document.getElementById('projectButtons');
+  const departmentSlidersContainer = document.getElementById('departmentSliders');
+  const statusDisplay = document.getElementById('statusDisplay');
+  const reserveDisplay = document.getElementById('reserveDisplay');
+  const reserveBtn = document.getElementById('reserveBtn');
+  const useReserveBtn = document.getElementById('useReserveBtn');
+  const nextYearBtn = document.getElementById('nextYearBtn');
+  const resetBtn = document.getElementById('resetBtn'); 
+  const guidanceText = document.getElementById('guidanceText');
+  
+  // --- Game Constants ---
+  const STARTING_OPERATING_COST = 31500000;
+  const BASE_REVENUE = 30000000;
+  const REVENUE_PER_TAX_POINT = 500000; 
+  const DEPT_ADJUSTMENT_PER_PERCENT = 25000; 
+  const MAX_YEARS = 4;
+
+  const projects = [
+    // --- REQUIRED PROJECTS ---
+    { name: "Emergency Server Upgrade", cost: 1000000, deadline: 1, type: 'required' }, 
+    { name: "New Fire Truck", cost: 1000000, deadline: 2, type: 'required' }, 
+    { name: "New Waste Facility", cost: 5000000, deadline: 3, type: 'required' }, 
+    { name: "Major Bridge Replacement", cost: 7000000, deadline: 4, type: 'required' }, 
+    
+    // --- ADDITIONAL PROJECTS (TO IMPROVE CITY) ---
+    { name: "Water Treatment Upgrade", cost: 4000000, type: 'additional' },
+    { name: "New Recreation Center", cost: 2000000, type: 'additional' },
+    { name: "Major Road Improvements", cost: 3500000, type: 'additional' },
+    { name: "Library Renovation", cost: 1500000, type: 'additional' },
+    { name: "Fire Station Upgrade", cost: 2500000, type: 'additional' },
+    { name: "Community Water Park", cost: 1750000, type: 'additional' },
+    { name: "New Sports Complex", cost: 3000000, type: 'additional' },
+    { name: "Public Transit Expansion", cost: 2250000, type: 'additional' },
+    { name: "Bike Path Network", cost: 1250000, type: 'additional' },
+    { name: "City Hall Renovation", cost: 3500000, type: 'additional' },
+    { name: "Municipally Owned Mall", cost: 2750000, type: 'additional' }
+  ];
+  
+  const departments = [
+    "RCMP/Policing Services", "Snow & Ice Removal", "Road & Pavement Maintenance",
+    "Parks & Playgrounds", "Recreation Facilities & Programs", "Community Development",
+    "Storm Water Maintenance", "Municipal Public Safety", "Athletic Fields"
+  ];
+  
+  const scenarios = {
+      "RCMP/Policing Services": {
+          cuts: ["Minor Cut (-10%): Non-emergency response times increase slightly. Community events funding is reduced.","Moderate Cut (-20%): Police patrols are visibly less frequent. Community engagement programs are cancelled.","Severe Cut (-30%): Significant rise in property crime due to fewer patrols. Only highest priority calls are actioned quickly.","Drastic Cut (-40%): Police Station staff are reduced to minimal levels. Non-violent crime investigations are often suspended.","Extreme Cut (-50%): Patrols are severely limited. Emergency response for anything but violent crime is heavily delayed. Officer morale plummets."],
+          increases: ["Minor Increase (+10%): Increased police visibility and slightly faster non-emergency response.","Moderate Increase (+20%): New proactive community engagement programs and neighborhood watch support are launched.","High Increase (+30%): Significant investment in technology and training. Crime rates in hot spots begin to drop.","Major Increase (+40%): Full community policing model adopted. Dedicated bike patrols established downtown.","Extreme Increase (+50%): A new satellite station is built in a growing area. Fastest emergency response times in the region."]
+      },
+      "Snow & Ice Removal": {
+          cuts: ["Minor Cut (-10%): Residential streets are cleared slower than usual. Salt usage is slightly reduced.","Moderate Cut (-20%): Secondary and residential routes are often only cleared after major storms. Icy conditions persist.","Severe Cut (-30%): Plowing priority drops severely. Side roads are often ignored for days. Travel times significantly increase.","Drastic Cut (-40%): Only main arterials are cleared promptly. Many roads become single-lane, deeply rutted ice tracks.","Extreme Cut (-50%): Minimal clearance. Snow clearing is effectively limited to the primary highway through town. City gridlock is common."],
+          increases: ["Minor Increase (+10%): Residential streets are cleared more quickly after storms.","Moderate Increase (+20%): Enhanced anti-icing methods used before storms. Snow removal equipment is upgraded.","High Increase (+30%): All roads cleared within 24 hours of a major snowfall. Dedicated sidewalk clearing team established.","Major Increase (+40%): New heavy equipment purchased. Proactive clearing begins immediately upon first flake.","Extreme Increase (+50%): The city is prepared for record snowfalls. Service levels are the best in the province."]
+      },
+      "Road & Pavement Maintenance": {
+          cuts: ["Minor Cut (-10%): Routine pavement maintenance deferred. Pothole repair response time increases to over a week.","Moderate Cut (-20%): Pothole repair budget slashed. Roads visibly deteriorate, leading to more complaints.","Severe Cut (-30%): Major resurfacing projects are completely halted. The structural integrity of several roads is compromised.","Drastic Cut (-40%): Potholes are only fixed if they are deemed a 'major hazard.' Vehicle damage claims against the city skyrocket.","Extreme Cut (-50%): Road maintenance limited to emergency fixes. Many side roads become barely drivable, resembling gravel roads."],
+          increases: ["Minor Increase (+10%): Pothole response time drops to 72 hours. Proactive crack sealing begins.","Moderate Increase (+20%): Potholes are fixed within 48 hours. Aggressive proactive pavement management implemented.","High Increase (+30%): Major resurfacing is prioritized. Road network health rating significantly improves.","Major Increase (+40%): New, quieter asphalt materials used in residential areas. A full-time sidewalk repair crew is established.","Extreme Increase (+50%): The city achieves the highest road quality rating in the region. All roads are inspected monthly."]
+      },
+      "Parks & Playgrounds": {
+          cuts: ["Minor Cut (-10%): Grass is cut slightly less often. Water conservation measures lead to duller green spaces.","Moderate Cut (-20%): Grass cutting frequency reduced significantly. Weeds and pest problems become visible in parks.","Severe Cut (-30%): Landscape beds are neglected. Routine maintenance on some playground equipment is delayed, raising minor safety concerns.","Drastic Cut (-40%): Several smaller parks are designated for 'minimal maintenance.' Public washrooms in parks are closed for the season.","Extreme Cut (-50%): Only essential safety checks are performed. Parks become overgrown and playgrounds start to look run-down."],
+          increases: ["Minor Increase (+10%): Parks receive more frequent attention. New flower planting efforts begin.","Moderate Increase (+20%): New trees planted throughout the city. All playgrounds receive minor upgrades and fresh mulch.","High Increase (+30%): Two major parklands are fully renovated. The city wins a 'Green City' award.","Major Increase (+40%): A new splash park is constructed. Park security patrols are increased.","Extreme Increase (+50%): All playgrounds are replaced with state-of-the-art equipment. New public art installed in parks."]
+      },
+      "Recreation Facilities & Programs": {
+          cuts: ["Minor Cut (-10%): Facility hours are cut back slightly. Less popular programs are cancelled.","Moderate Cut (-20%): Arena and pool hours are reduced during off-peak times. Fee-based program costs increase.","Severe Cut (-30%): Facility maintenance deferred. A major recreation center wing is closed permanently to save costs.","Drastic Cut (-40%): A community pool or arena is permanently shut down. Access to recreation facilities becomes limited.","Extreme Cut (-50%): All non-essential programs are cancelled. Remaining facilities are run on skeletal staff, with severe hour restrictions."],
+          increases: ["Minor Increase (+10%): Extended operating hours for facilities. New instructional classes added.","Moderate Increase (+20%): Equipment in the gym and pool is upgraded. Free access programs are launched for low-income residents.","High Increase (+30%): A major renovation of one facility is funded. More popular evening and weekend program slots are opened.","Major Increase (+40%): Funding provided for local sports teams to host regional events. New youth programs are developed.","Extreme Increase (+50%): A new state-of-the-art multi-use recreation dome is designed and construction begins."]
+      },
+      "Community Development": {
+          cuts: ["Minor Cut (-10%): Support for non-profit and arts organizations is slightly reduced.","Moderate Cut (-20%): Grants to non-profits are cut. Staff support for local business events is eliminated.","Severe Cut (-30%): Business incentive programs are suspended. Downtown revitalization efforts stall.","Drastic Cut (-40%): The department focuses only on mandatory permitting. Economic development efforts cease.","Extreme Cut (-50%): The Community Development department is merged with another, resulting in minimal activity beyond processing forms."],
+          increases: ["Minor Increase (+10%): New networking events are created to support small businesses.","Moderate Increase (+20%): A new business retention and attraction campaign is launched.","High Increase (+30%): A downtown beautification and incentive fund is established, attracting new investment.","Major Increase (+40%): Funding is secured to attract a major employer to the city.","Extreme Increase (+50%): A new innovation hub is built, cementing the city as a regional economic center."]
+      },
+      "Storm Water Maintenance": {
+          cuts: ["Minor Cut (-10%): Routine storm drain cleaning schedule is stretched out.","Moderate Cut (-20%): Minor flooding becomes more frequent during heavy rain. Residential complaints rise.","Severe Cut (-30%): Sewer and drainage system maintenance is minimal. Increased risk of basement flooding in older neighborhoods.","Drastic Cut (-40%): System fails to handle moderate storms. Major intersections flood, causing road closures.","Extreme Cut (-50%): Focus is strictly on system repair after a failure. Infrastructure damage from constant flooding is widespread."],
+          increases: ["Minor Increase (+10%): Proactive monitoring of drainage systems is implemented.","Moderate Increase (+20%): Accelerated maintenance schedule cleans all drains twice per year.","High Increase (+30%): New infrastructure projects are funded to improve drainage capacity in known problem areas.","Major Increase (+40%): The city begins converting some drainage areas into naturalized bio-swales, improving water quality.","Extreme Increase (+50%): A major, city-wide storm water infrastructure upgrade is initiated, eliminating flood risk."]
+      },
+      "Municipal Public Safety": {
+          cuts: ["Minor Cut (-10%): Bylaw enforcement response time increases. Fewer staff for proactive fire code inspections.","Moderate Cut (-20%): Bylaw enforcement is complaint-driven only. Visible disorder (e.g., illegal dumping) increases.","Severe Cut (-30%): Building permit processing is significantly delayed. Staff reductions mean fewer safety and sanitation inspections.","Drastic Cut (-40%): Public safety is compromised due to lack of fire, building, and health inspections. Unsafe living conditions may arise.","Extreme Cut (-50%): The bylaw office is barely functional. The city loses control over nuisance and safety issues."],
+          increases: ["Minor Increase (+10%): Bylaw patrols increase. Proactive inspections reduce visible disorder.","Moderate Increase (+20%): Faster building permit approval process. All essential safety inspections are completed on time.","High Increase (+30%): Dedicated public safety teams patrol parks and high-traffic areas, deterring nuisance behavior.","Major Increase (+40%): Investment in technology for monitoring and enforcement. A new community mediation service is launched.","Extreme Increase (+50%): The city is recognized for its high standard of public order and safety compliance."]
+      },
+      "Athletic Fields": {
+          cuts: ["Minor Cut (-10%): Field lining is less crisp. Minor weed control is deferred.","Moderate Cut (-20%): The quality of turf and playing surfaces deteriorates. Less maintenance leads to minor cancellations.","Severe Cut (-30%): Fields are poorly maintained and potentially unsafe for major sports. Teams must play on suboptimal surfaces.","Drastic Cut (-40%): Maintenance stops during the off-season. Several fields are closed permanently due to poor condition.","Extreme Cut (-50%): All non-essential maintenance ceases. Athletic fields become glorified open green space, unplayable for organized sports."],
+          increases: ["Minor Increase (+10%): Fields are better prepared before the season. Improved irrigation leads to greener turf.","Moderate Increase (+20%): Fields are maintained to a high standard, attracting local sports leagues.","High Increase (+30%): New high-quality artificial turf installed on two major fields.","Major Increase (+40%): The city attracts regional sports tournaments, boosting local business.","Extreme Increase (+50%): New lighting installed on all major fields, dramatically extending playing hours."]
+      }
+  };
+
+
+  // --- Game State ---
+  let currentYear = 1;
+  let selectedProjects = [];
+  let completedProjects = [];
+  let reserve = 0;
+  let surplus = 0;
+  let shortfall = 0;
+  let operatingCost = STARTING_OPERATING_COST; 
+  let reserveContribution = 0; 
+  let lastInputsHash = ''; 
+  let departmentBaselines = {};
+  departments.forEach(dept => departmentBaselines[dept] = 100);
+
+  // --- Utility Functions ---
+  function formatCurrency(amount) {
+    return `${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
+  }
+  
+  function formatCurrencyDisplay(amount) {
+      return `$${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
+  }
+
+  function generateInputsHash() {
+      let hash = `Tax:${taxRateInput.value}`;
+      departments.forEach(deptName => {
+          const id = deptName.replace(/\s|&/g, "");
+          const slider = document.getElementById(id);
+          if (slider) {
+              hash += `|${id}:${slider.value}`;
+          }
+      });
+      hash += `|Projects:${selectedProjects.join(',')}`;
+      return hash;
+  }
+
+  // --- Render Functions ---
+  function renderYearBar() {
+    const yearBar = document.getElementById('yearBar');
+    yearBar.innerHTML = "";
+    for (let i = 1; i <= MAX_YEARS; i++) {
+      const yearEl = document.createElement("div");
+      yearEl.className = "year";
+      yearEl.textContent = `Year ${i}`;
+      if (i === currentYear) {
+        yearEl.classList.add("active");
+      } else if (i < currentYear) {
+        yearEl.classList.add("completed");
+      }
+      yearBar.appendChild(yearEl);
+    }
+  }
+
+  function updateProgressBar() {
+    document.querySelectorAll(".year").forEach((el, index) => {
+      el.classList.remove("active", "completed");
+      if (index + 1 === currentYear) {
+        el.classList.add("active");
+      } else if (index + 1 < currentYear) {
+        el.classList.add("completed");
+      }
+    });
+  }
+
+  function updateTaxSliderColor() { 
+    const taxValue = parseInt(taxRateInput.value);
+    let circleColor;
+    let sliderClass; 
+
+    if (taxValue < 3) {
+      circleColor = "linear-gradient(to bottom, #4caf50, #1b5e20)";
+      sliderClass = "increase-slider";
+    } else if (taxValue > 3) {
+      circleColor = "linear-gradient(to bottom, #e53935, #b71c1c)";
+      sliderClass = "cut-slider";
+    } else {
+      circleColor = "linear-gradient(to bottom, #78909c, #546e7a)";
+      sliderClass = "neutral-slider";
+    }
+
+    taxCircle.textContent = `${taxValue}%`;
+    taxCircle.style.background = circleColor;
+    
+    // Update tax slider class for thumb color
+    taxRateInput.classList.remove('cut-slider', 'increase-slider', 'neutral-slider');
+    taxRateInput.classList.add(sliderClass);
+  }
+  
+  function createProjectButton(project, index) {
+      const btn = document.createElement("button");
+      btn.className = "project-btn";
+      
+      let content = `<div class="project-name">${project.name}</div>
+                      <div class="project-cost">${formatCurrencyDisplay(project.cost)}</div>`;
+
+      if (project.type === 'required') {
+          content += `<div class="required-text">CRITICAL - DUE BY YR ${project.deadline}</div>`;
+          btn.classList.add("required");
+      }
+      btn.innerHTML = content;
+
+      if (completedProjects.includes(index)) {
+          btn.classList.add("completed");
+          btn.disabled = true;
+      } else {
+          if (selectedProjects.includes(index)) {
+              btn.classList.add("selected");
+          }
+          
+          btn.onclick = () => {
+              btn.classList.toggle("selected");
+              if (btn.classList.contains("selected")) {
+                  selectedProjects.push(index);
+              } else {
+                  selectedProjects = selectedProjects.filter(i => i !== index);
+              }
+              updateStatus();
+          };
+      }
+      return btn;
+  }
+
+  function createProjectButtons() {
+    projectButtonsContainer.innerHTML = "";
+    
+    const requiredProjects = projects.filter(p => p.type === 'required');
+    const additionalProjects = projects.filter(p => p.type === 'additional');
+
+    // 1. Required Projects
+    const requiredGroup = document.createElement('div');
+    requiredGroup.className = 'project-group-container';
+    requiredGroup.innerHTML = '<h4>Critical & Required Infrastructure</h4><div class="projects" id="requiredProjectsGrid"></div>';
+    
+    const requiredGrid = requiredGroup.querySelector('#requiredProjectsGrid');
+    requiredProjects.forEach(project => {
+        const index = projects.indexOf(project);
+        requiredGrid.appendChild(createProjectButton(project, index));
+    });
+    projectButtonsContainer.appendChild(requiredGroup);
+    
+    // 2. Additional Projects
+    const additionalGroup = document.createElement('div');
+    additionalGroup.className = 'project-group-container';
+    additionalGroup.innerHTML = `
+      <h4>Additional Quality-of-Life Projects</h4>
+      <p style="font-size:0.85em; color:var(--primary-dark); font-weight: 700; margin-bottom: 10px;">
+          *Projects derived from community priority feedback.
+      </p>
+      <div class="projects" id="additionalProjectsGrid"></div>
+    `;
+    
+    const additionalGrid = additionalGroup.querySelector('#additionalProjectsGrid');
+    additionalProjects.forEach(project => {
+        const index = projects.indexOf(project);
+        additionalGrid.appendChild(createProjectButton(project, index));
+    });
+    projectButtonsContainer.appendChild(additionalGroup);
+  }
+
+  function createDepartmentSliders() {
+    departmentSlidersContainer.innerHTML = "";
+    departments.forEach(deptName => {
+      const id = deptName.replace(/\s|&/g, "");
+      
+      const basePercentage = departmentBaselines[deptName] || 100;
+
+      const card = document.createElement("div");
+      card.className = "slider-card";
+      
+      let sliderValue = 100;
+      
+      card.innerHTML = `
+        <div class="slider-circle" id="circle-${id}">${sliderValue}%</div>
+        <div class="slider-content">
+          <label><strong>${deptName}</strong> <span style="font-weight: normal; color: var(--primary-color);">(Current Baseline: ${basePercentage}%)</span></label>
+          <input type="range" min="50" max="150" value="${sliderValue}" step="10" id="${id}">
+          <div id="impact-${id}" style="font-size:0.95em;color:#555; margin-top: 10px; line-height: 1.4;">No change to service levels.</div>
+        </div>
+      `;
+      departmentSlidersContainer.appendChild(card);
+
+      const slider = document.getElementById(id);
+      updateSliderVisuals(slider); 
+      
+      slider.addEventListener("input", () => {
+        updateSliderVisuals(slider);
+        updateStatus();
+      });
+    });
+  }
+  
+  function getImpactText(deptName, percentage) {
+      const scenario = scenarios[deptName];
+      if (!scenario) return "No change to service levels.";
+
+      const offset = percentage - 100;
+      
+      if (offset < 0) {
+          const index = Math.abs(offset) / 10 - 1;
+          if (index >= 0 && index < scenario.cuts.length) {
+              return scenario.cuts[index];
+          }
+      } else if (offset > 0) {
+          const index = offset / 10 - 1;
+          if (index >= 0 && index < scenario.increases.length) {
+              return scenario.increases[index];
+          }
+      } 
+      
+      return "No change to service levels.";
+  }
+
+  function updateSliderVisuals(slider) {
+      const deptName = slider.previousElementSibling.textContent.split('(')[0].trim();
+      const id = slider.id;
+      const val = parseInt(slider.value);
+      const circle = document.getElementById(`circle-${id}`);
+      const impact = document.getElementById(`impact-${id}`);
+      
+      let color, sliderClass;
+      
+      if (val < 100) {
+        color = "linear-gradient(to bottom, #e53935, #b71c1c)";
+        sliderClass = "cut-slider";
+      } else if (val > 100) {
+        color = "linear-gradient(to bottom, #4caf50, #1b5e20)";
+        sliderClass = "increase-slider";
+      } else {
+        color = "linear-gradient(to bottom, #78909c, #546e7a)";
+        sliderClass = "neutral-slider";
+      }
+      
+      slider.className = sliderClass; 
+
+      circle.textContent = `${val}%`;
+      circle.style.background = color;
+      
+      impact.innerHTML = getImpactText(deptName, val);
+  }
+  
+  // --- Game Logic ---
+  function updateStatus() {
+    updateTaxSliderColor();
+    
+    const tax = parseFloat(taxRateInput.value);
+    
+    const revenue = BASE_REVENUE + (REVENUE_PER_TAX_POINT * tax); 
+    
+    const projectCost = selectedProjects.reduce((sum, i) => sum + projects[i].cost, 0);
+    
+    let currentYearDeptAdjustment = 0;
+    departments.forEach(deptName => {
+      const id = deptName.replace(/\s|&/g, "");
+      const slider = document.getElementById(id);
+      if (slider) {
+          const val = parseInt(slider.value);
+          currentYearDeptAdjustment += DEPT_ADJUSTMENT_PER_PERCENT * (val - 100);
+      }
+    });
+
+    let totalCost = operatingCost + projectCost + currentYearDeptAdjustment;
+    
+    let balance = totalCost - revenue - reserveContribution; 
+
+    const calculatedShortfall = Math.max(0, balance);
+    const calculatedSurplus = Math.abs(Math.min(0, balance));
+    
+    const currentHash = generateInputsHash();
+    const inputsChanged = currentHash !== lastInputsHash;
+    lastInputsHash = currentHash; 
+    
+    if (calculatedShortfall > 0) {
+      surplus = 0;
+      shortfall = calculatedShortfall;
+    } else {
+      shortfall = 0;
+      if (calculatedSurplus === 0 || inputsChanged) {
+          surplus = calculatedSurplus;
+      }
+    }
+    
+    let displaySurplus = surplus;
+    let displayShortfall = shortfall;
+
+    // --- Update Displays using the final display variables ---
+    statusDisplay.innerHTML = displayShortfall > 0 ? 
+        `Shortfall: <strong>${formatCurrency(displayShortfall)}</strong>` : 
+        `Surplus: <strong>${formatCurrency(displaySurplus)}</strong>`;
+        
+    statusDisplay.style.background = displayShortfall > 0 ? 
+        "linear-gradient(to bottom right, #c0392b, #800000)" : 
+        "linear-gradient(to bottom right, #2ecc71, #1b5e20)"; 
+    
+    reserveDisplay.textContent = formatCurrency(reserve);
+
+    reserveBtn.style.display = surplus > 0 ? "inline-block" : "none";
+    nextYearBtn.style.display = shortfall === 0 ? "inline-block" : "none";
+    
+    useReserveBtn.disabled = !(shortfall > 0 && reserve > 0);
+    
+    updateGuidance(projectCost); 
+  }
+
+  function updateGuidance(currentProjectCost) {
+    const taxValue = parseInt(taxRateInput.value);
+    
+    if (shortfall > 0) {
+        let msg = "You must cover the shortfall by lowering service levels, increasing taxes, or using your reserve fund.";
+        if (currentProjectCost > 0) {
+            msg = `You have selected projects costing ${formatCurrencyDisplay(currentProjectCost)}. ${msg}`;
+        } else if (taxValue < 3) {
+             msg = `Your ${taxValue}% tax adjustment is below the 3% inflation rate, creating a shortfall. ${msg}`;
+        }
+        
+        const currentYearRequiredProjects = projects.filter(p => p.type === 'required' && p.deadline === currentYear);
+        const requiredProjectsSelected = currentYearRequiredProjects.every(p => selectedProjects.includes(projects.indexOf(p)));
+
+        // Critical project check - only needed for current year's deadline
+        if (currentYearRequiredProjects.length > 0) {
+            const missingProject = currentYearRequiredProjects.find(p => !selectedProjects.includes(projects.indexOf(p)));
+            if (missingProject) {
+              msg += ` ⚠️ CRITICAL WARNING: The required project: ${missingProject.name} must be selected this year.`;
+            }
+        }
+        
+        guidanceText.textContent = msg;
+    } else if (surplus > 0) {
+      guidanceText.textContent = `You have a surplus of ${formatCurrencyDisplay(surplus)}! Add it to your reserve fund for future needs or proceed to the next year.`;
+    } else if (reserveContribution > 0) {
+        guidanceText.textContent = `The budget is balanced using ${formatCurrencyDisplay(reserveContribution)} from the reserve fund. You can proceed to the next year.`;
+    } else {
+      guidanceText.textContent = "The budget is perfectly balanced. You can proceed to the next year.";
+    }
+  }
+
+  function showSummary() { 
+    document.body.innerHTML = `
+      <div style="padding: 40px; font-family: Montserrat, sans-serif; max-width: 800px; margin: 40px auto; background: #fff; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2);">
+        <h1 style="color: var(--primary-color);">Budget Summary - Simulation Complete!</h1>
+        <p style="font-size: 1.1em; color: #333; margin-bottom: 25px;">Congratulations! You have completed all ${MAX_YEARS} years of the simulation. How did your choices affect the city?</p>
+        
+        <h3 style="border-bottom: 3px solid var(--green-success); color: var(--primary-dark); margin-top: 40px;">Projects Completed:</h3>
+        <ul style="list-style: none; padding-left: 0;">${completedProjects.length > 0 ? completedProjects.map(i => `<li style="margin-bottom: 10px; padding: 10px; background: #e8f5e9; border-left: 5px solid var(--green-success); border-radius: 8px; font-weight: 600;">✅ ${projects[i].name} <span style="font-weight: bold; color: ${projects[i].type === 'required' ? 'var(--red-alert)' : 'var(--primary-dark)'};">(${projects[i].type === 'required' ? 'CRITICAL' : 'Quality-of-Life'})</span></li>`).join('') : '<li style="color: var(--red-alert); font-weight: bold; margin-top: 15px;">❌ No projects were completed.</li>'}</ul>
+        
+        <h3 style="border-bottom: 3px solid var(--primary-color); color: var(--primary-dark); margin-top: 40px;">Final Reserve Fund:</h3>
+        <p style="font-size:2.5em; font-weight:900; color:var(--green-success);"><strong>${formatCurrencyDisplay(reserve)}</strong></p>
+        
+        <button class="button" onclick="location.reload()" style="margin-top: 30px; background: linear-gradient(to right, var(--primary-color), var(--primary-dark)); padding: 18px 30px; font-size: 1.1em;">Start Over</button>
+      </div>`;
+  }
+
+  function resetGame() {
+    currentYear = 1;
+    selectedProjects = [];
+    completedProjects = [];
+    reserve = 0;
+    surplus = 0;
+    shortfall = 0;
+    operatingCost = STARTING_OPERATING_COST;
+    reserveContribution = 0; 
+    taxRateInput.value = 3;
+    departments.forEach(dept => departmentBaselines[dept] = 100); 
+    lastInputsHash = generateInputsHash(); 
+    
+    renderYearBar();
+    createProjectButtons();
+    createDepartmentSliders(); 
+    updateStatus();
+    
+    resetBtn.textContent = "Reset Year";
+  }
+  
+  function resetYearChoices() { 
+    taxRateInput.value = 3;
+    
+    const requiredIndicesForCurrentYear = projects
+        .map((p, i) => (p.type === 'required' && p.deadline === currentYear) ? i : -1)
+        .filter(i => i !== -1);
+        
+    selectedProjects = selectedProjects.filter(i => requiredIndicesForCurrentYear.includes(i));
+    
+    reserveContribution = 0; 
+    
+    departments.forEach(deptName => {
+        const id = deptName.replace(/\s|&/g, "");
+        const slider = document.getElementById(id);
+        if (slider) {
+            slider.value = 100;
+            updateSliderVisuals(slider);
+        }
+    });
+    
+    createProjectButtons();
+    updateStatus();
+    guidanceText.textContent = "Current year choices reset! You are back to the default 3% tax increase. (Note: Required projects are NOT deselected).";
+  }
+
+  // --- Event Listeners ---
+  reserveBtn.addEventListener("click", () => {
+    reserve += surplus;
+    surplus = 0; 
+    lastInputsHash = generateInputsHash(); 
+    updateStatus(); 
+    guidanceText.textContent = `Surplus added to Reserve Fund! Reserve is now ${formatCurrencyDisplay(reserve)}.`;
+  });
+
+  useReserveBtn.addEventListener("click", () => { 
+    updateStatus(); 
+    
+    if (reserve > 0 && shortfall > 0) {
+      const amountToUse = Math.min(shortfall, reserve); 
+      reserveContribution += amountToUse; 
+      reserve -= amountToUse;
+      shortfall = 0; 
+      surplus = 0;
+      updateStatus();
+      
+      if (shortfall === 0) {
+          guidanceText.textContent = `Reserve fund of ${formatCurrencyDisplay(amountToUse)} applied to cover deficit. The budget is now balanced for the year!`;
+      } else {
+          guidanceText.textContent = `Reserve fund of ${formatCurrencyDisplay(amountToUse)} was used, but a shortfall of ${formatCurrencyDisplay(shortfall)} remains.`;
+      }
+    }
+  });
+
+  nextYearBtn.addEventListener("click", () => {
+    
+    const currentYearRequiredProjects = projects.filter(p => p.type === 'required' && p.deadline === currentYear);
+    const requiredProjectsSelected = currentYearRequiredProjects.every(p => selectedProjects.includes(projects.indexOf(p)));
+
+    if (currentYearRequiredProjects.length > 0 && !requiredProjectsSelected) {
+        const missingProject = currentYearRequiredProjects.find(p => !selectedProjects.includes(projects.indexOf(p))).name;
+        alert(`⚠️ Budget Failure! The required project: ${missingProject} must be selected and funded this year to pass the year-end audit.`);
+        return;
+    }
+    
+    let deptAdjustment = 0;
+    departments.forEach(deptName => {
+        const id = deptName.replace(/\s|&/g, "");
+        const slider = document.getElementById(id);
+        if (slider) {
+            const currentSliderValue = parseInt(slider.value);
+            
+            const adjustment = DEPT_ADJUSTMENT_PER_PERCENT * (currentSliderValue - 100);
+            deptAdjustment += adjustment;
+            
+            departmentBaselines[deptName] = currentSliderValue; 
+        }
+    });
+
+    operatingCost = operatingCost + deptAdjustment; 
+    
+    selectedProjects.forEach(i => {
+      if (!completedProjects.includes(i)) {
+        completedProjects.push(i);
+      }
+    });
+    selectedProjects = []; 
+    
+    currentYear++;
+
+    if (currentYear > MAX_YEARS) {
+      showSummary();
+    } else {
+      
+      taxRateInput.value = 3; 
+      reserveContribution = 0; 
+      
+      updateProgressBar();
+      createProjectButtons(); 
+      createDepartmentSliders(); 
+      lastInputsHash = generateInputsHash(); 
+      updateStatus();
+      
+      guidanceText.textContent = `🎉 You are now in Year ${currentYear}. Time to re-balance!`;
+    }
+  });
+
+  resetBtn.addEventListener("click", () => {
+      if (currentYear === 1 && completedProjects.length === 0) {
+          if (confirm("Are you sure you want to reset the entire simulation?")) {
+              resetGame();
+          }
+      } else {
+          const action = prompt("Type 'year' to reset the current year's choices, or 'all' to reset the entire simulation:", "").toLowerCase();
+          if (action === 'year') {
+              resetYearChoices();
+          } else if (action === 'all') {
+              if (confirm("Are you sure you want to reset the ENTIRE simulation? This will erase all progress and your reserve fund.")) {
+                  resetGame();
+              }
+          }
+      }
+  });
+
+  taxRateInput.addEventListener("input", updateStatus);
+  
+  departmentSlidersContainer.addEventListener('input', (event) => {
+      if (event.target.tagName === 'INPUT' && event.target.type === 'range') {
+          updateStatus();
+      }
+  });
+
+  // --- Initialization ---
+  resetGame();
+
 </script>
 </body>
 </html>
