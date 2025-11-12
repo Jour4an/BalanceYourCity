@@ -363,7 +363,7 @@
     /* FIX: CENTERING TEXT on buttons */
     display: flex; 
     align-items: center;
-    justify-content: center;
+    justify-content: center; /* Ensures text is centered horizontally */
     text-align: center;
   }
   .button:disabled {
@@ -444,6 +444,7 @@
     #reserveBtn, #useReserveBtn { 
         flex: 0 0 100%; /* CRITICAL: Fixed basis to 100% to ensure clean stacking and full width */
         min-width: unset; 
+        justify-content: center; /* Reinforce horizontal centering */
     }
     
     /* Main Actions Group: FIX: Sets Proceed and Reset side-by-side with consistent sizing */
