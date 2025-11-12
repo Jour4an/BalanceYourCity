@@ -91,7 +91,6 @@
   /* --- Sliders --- */
   .slider-card { 
     display: flex; 
-    /* ADDED GAP/SPACING FOR BETTER VISUAL SEPARATION */
     align-items: flex-start; 
     margin-bottom: 20px; 
     padding: 20px; 
@@ -100,9 +99,11 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
   }
   
-  /* FIX: Add spacing after the circle for better alignment */
-  .slider-card .slider-circle { 
-    margin-right: 20px; 
+  /* Canvas positioning */
+  .slider-card canvas {
+      /* Consistent spacing for both department and tax canvases */
+      margin-right: 20px; 
+      flex-shrink: 0;
   }
   
   .slider-card .slider-content {
@@ -116,24 +117,11 @@
       display: flex;
       align-items: center; /* Vertically center all items in the row */
       gap: 15px;
+      margin-top: 5px;
   }
   #taxAdjusterContainer input[type="range"] {
       flex-grow: 1;
       margin-bottom: 0;
-  }
-  
-  .slider-circle { 
-    width: 70px; 
-    height: 70px; 
-    border-radius: 50%; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-weight: 700; 
-    font-size: 1.2em; 
-    color: white; 
-    flex-shrink: 0;
-    margin: 0; 
   }
   
   #cumulativeTaxDisplay {
@@ -150,6 +138,7 @@
       text-align: center;
   }
   
+  /* Input Range Styling */
   input[type="range"] { 
     width: 100%; 
     height: 8px; 
@@ -171,13 +160,6 @@
     border: 3px solid #fff;
     box-shadow: 0 0 5px rgba(0,0,0,0.2);
   }
-  /* Gradient Circles (applied via JS) */
-  .cut-slider-circle { background: linear-gradient(to bottom, #FF5733, #C70039); }
-  .increase-slider-circle { background: linear-gradient(to bottom, #4CAF50, #2E8B57); }
-  .neutral-slider-circle { background: linear-gradient(to bottom, #1a73e8, #1565c0); }
-  /* Cumulative Tracker (now fixed neutral color) */
-  .cumulative-tracker { background: linear-gradient(to bottom, #607d8b, #455a64); }
-
 
   /* --- Project Buttons --- */
   #projectButtons > .projects {
@@ -291,8 +273,6 @@
       border-top-color: #FFD700;
   }
   
-
-
   /* --- Floating Controls (Fixed position and flex layout) --- */
   .floating-controls {
     position: fixed; 
@@ -305,6 +285,7 @@
     
     display: flex; 
     flex-direction: column; 
+    /* FIX: Made floater smaller by reducing vertical padding */
     padding: 15px 20px 0; 
     box-sizing: border-box;
   }
@@ -420,14 +401,14 @@
   /* --- Mobile Adjustments (Floater Fixes Applied Here) --- */
   @media (max-width: 850px) {
     .floating-controls { 
-        /* Made floater smaller by reducing vertical padding */
-        padding: 10px 10px 0; 
+        /* FIX: Made floater smaller by reducing vertical padding further */
+        padding: 8px 10px 0; 
     }
     .floating-action-row {
         flex-wrap: wrap; 
         gap: 8px; 
         overflow-x: hidden; 
-        padding-bottom: 5px; /* Reduced vertical padding */
+        padding-bottom: 5px; 
     }
     .section { 
         /* Ensure max clearance on small screens */
@@ -444,17 +425,18 @@
     /* FIX: Make reserve buttons full width (100%) on mobile */
     #reserveBtn, #useReserveBtn { flex: 1 1 100%; min-width: unset; }
     
-    /* Main Actions Group: Stacks buttons vertically (Proceed then Reset) */
+    /* Main Actions Group: FIX: Sets Proceed and Reset side-by-side with consistent sizing */
     .main-actions-group { 
         order: 3; 
-        flex-direction: column; 
+        flex-direction: row; /* Changed from column to row for side-by-side */
         width: 100%; 
-        gap: 10px; /* Space between stacked buttons */
+        gap: 10px; /* Space between side-by-side buttons */
+        justify-content: space-between;
     }
-    /* FIX: Ensure action buttons take full length on mobile */
+    /* FIX: Ensures action buttons take exactly half the width */
     .main-actions-group .button {
-        min-width: 100%; 
-        flex: 1 1 100%; /* Ensure they are full length */
+        min-width: unset; 
+        flex: 1 1 50%; 
     }
     
     .button { min-width: auto; }
@@ -475,14 +457,16 @@
         order: 2; /* Put slider in the middle */
         width: 100%;
     }
-    #taxAnnualCircle {
+    #taxAdjusterContainer canvas {
         order: 1; /* Put Annual Rate at the top */
+        margin-right: 0 !important;
     }
     #cumulativeTaxDisplay {
         order: 3; /* Put Net Change at the bottom */
     }
-    
-    /* Reset Button is the last button in the main-actions-group, fulfilling "bottom of floater" */
+    #cumulativeTaxDisplay canvas {
+        margin-right: 0 !important;
+    }
   }
 </style>
 </head>
@@ -502,8 +486,9 @@
 
   <!-- TAX ADJUSTER CARD - MODIFIED STRUCTURE -->
   <div class="slider-card">
-    <!-- FIX: Removed the temporary margin-right from slider-circle in the element, now handled in CSS -->
-    <div class="slider-circle neutral-slider-circle" id="taxAnnualCircle">3%</div>
+    <!-- REPLACED div with CANVAS: Annual Tax Adjustment -->
+    <canvas id="canvas-tax-annual" width="80" height="80"></canvas>
+    
     <div class="slider-content" style="width: 100%;">
       <label><strong>Annual Property Tax Adjustment</strong></label>
       <p style="font-size:0.9em;color:#555;margin-bottom:10px;">The slider is the tax change for *this year*. A **3%** adjustment covers inflation (net 0% change on service levels).</p>
@@ -516,8 +501,8 @@
           <!-- Cumulative Tax Group (Right: Circle + Label) -->
           <div id="cumulativeTaxDisplay">
               <div class="tax-label">Net Change</div>
-              <!-- Changed to cumulative-tracker class for consistent look, as it's a fixed total -->
-              <div class="slider-circle cumulative-tracker" id="taxCumulativeCircle">3%</div> 
+              <!-- REPLACED div with CANVAS: Cumulative Tax Adjustment -->
+              <canvas id="canvas-tax-cumulative" width="60" height="60"></canvas> 
           </div>
       </div>
     </div>
@@ -556,8 +541,9 @@
 <script>
   // --- DOM Elements ---
   const taxRateInput = document.getElementById('taxRate');
-  const taxAnnualCircle = document.getElementById('taxAnnualCircle'); 
-  const taxCumulativeCircle = document.getElementById('taxCumulativeCircle'); 
+  // Changed references from DIVs to CANVAS elements
+  const taxAnnualCanvas = document.getElementById('canvas-tax-annual'); 
+  const taxCumulativeCanvas = document.getElementById('canvas-tax-cumulative'); 
   const projectButtonsContainer = document.getElementById('projectButtons');
   const departmentSlidersContainer = document.getElementById('departmentSliders');
   const statusDisplay = document.getElementById('statusDisplay');
@@ -582,7 +568,8 @@
     { name: "Server Upgrade", cost: 1000000, deadline: 1, type: 'required' }, 
     { name: "New Fire Truck", cost: 1000000, deadline: 2, type: 'required' }, 
     { name: "New Waste Facility", cost: 5000000, deadline: 3, type: 'required' }, 
-    { name: "Major Bridge Replacement", cost: 7000000, deadline: 4, type: 'required' }, 
+    // FIX: Renamed project to be Brooks-specific
+    { name: "Cassils Road Twinning & Upgrade", cost: 7000000, deadline: 4, type: 'required' }, 
     
     // --- ADDITIONAL PROJECTS ---
     { name: "Water Treatment Upgrade", cost: 4000000, type: 'additional' },
@@ -667,6 +654,48 @@
   function formatCurrencyDisplay(amount) {
       return `$${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
   }
+  
+  /**
+   * Draws a simple filled circle on a canvas with text in the center.
+   * This replaces the old DIV/CSS based circles for consistent sizing.
+   * @param {string} canvasId - The ID of the canvas element.
+   * @param {string} text - The text to display (e.g., "110%" or "5%").
+   * @param {string} color - The fill color of the circle.
+   */
+  function drawFilledCircle(canvasId, text, color) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      const size = canvas.width;
+      const center = size / 2;
+      const radius = center * 0.9; 
+
+      // Clear the canvas
+      ctx.clearRect(0, 0, size, size);
+
+      // Draw the background circle
+      ctx.beginPath();
+      ctx.arc(center, center, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.shadowColor = 'rgba(0,0,0,0.3)';
+      ctx.shadowBlur = 5;
+      ctx.fill();
+
+      // Draw the white text in the center
+      ctx.fillStyle = '#ffffff';
+      
+      // Determine font size based on canvas size
+      let fontSize = size === 80 ? 18 : 14; 
+      
+      // FIX: Explicitly set Montserrat font for all canvas text
+      ctx.font = `bold ${fontSize}px Montserrat`; 
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowBlur = 0; // Disable shadow for text
+      ctx.fillText(text, center, center);
+  }
+
 
   /**
    * Calculates the raw balance for the current year based on current slider inputs.
@@ -730,36 +759,31 @@
   function updateTaxSliderColor() { 
     const taxValue = parseInt(taxRateInput.value);
     
-    // --- 1. ANNUAL TAX DISPLAY (Left Circle) ---
-    // Update the Annual Circle with the current slider value
-    taxAnnualCircle.textContent = `${taxValue}%`;
-    let annualCircleClass;
-    if (taxValue > 3) {
-      annualCircleClass = "increase-slider-circle";
+    // --- 1. ANNUAL TAX DISPLAY (Left Canvas) ---
+    taxAnnualCanvas.textContent = `${taxValue}%`;
+    let colorAnnual;
+    
+    // FIX: Reverse logic for Tax Rate (Green for drop < 3%, Red for hike > 3%)
+    if (taxValue < 3) {
+      colorAnnual = "#4CAF50"; // Green (Taxpayer benefit)
       taxRateInput.style.background = '#4CAF50'; 
-    } else if (taxValue < 3) {
-      annualCircleClass = "cut-slider-circle";
+    } else if (taxValue > 3) {
+      colorAnnual = "#FF5733"; // Red (Taxpayer detriment)
       taxRateInput.style.background = '#FF5733';
     } else {
-      annualCircleClass = "neutral-slider-circle";
+      colorAnnual = "#1a73e8"; // Blue (Balanced/Inflation match)
       taxRateInput.style.background = '#1a73e8';
     }
-    taxAnnualCircle.className = `slider-circle ${annualCircleClass}`;
+    
+    // Draw the Annual Canvas Circle
+    drawFilledCircle('canvas-tax-annual', `${taxValue}%`, colorAnnual);
 
-
-    // --- 2. CUMULATIVE TAX DISPLAY (Right Circle, Net Change) ---
-    // The cumulative rate is the total nominal rate increase from all previous years, PLUS the current year's selected rate.
-    // This variable now tracks the compounded nominal rate, as requested by the user.
+    // --- 2. CUMULATIVE TAX DISPLAY (Right Canvas, Net Change) ---
     const totalNominalRate = totalNominalTaxRate + taxValue; 
-
-    // Display the total nominal rate
-    const displayValue = `${totalNominalRate}%`;
-
-    // Update the Cumulative Circle with the cumulative display value
-    taxCumulativeCircle.textContent = displayValue;
-
-    // Reset cumulative circle color to be a neutral tracker
-    taxCumulativeCircle.className = `slider-circle cumulative-tracker`;
+    const colorCumulative = "#455a64"; // Neutral Gray for cumulative tracker
+    
+    // Draw the Cumulative Canvas Circle
+    drawFilledCircle('canvas-tax-cumulative', `${totalNominalRate}%`, colorCumulative);
   }
   
   function createProjectButton(project, index) {
@@ -828,9 +852,9 @@
       
       let sliderValue = departmentBaselines[deptName];
       
-      // Note: The slider-circle now has margin-right handled in the CSS
+      // REPLACED DIV with CANVAS
       card.innerHTML = `
-        <div class="slider-circle neutral-slider-circle" id="circle-${id}">100%</div>
+        <canvas id="canvas-${id}" width="80" height="80"></canvas>
         <div class="slider-content">
           <label><strong>${deptName}</strong> <span style="font-weight: normal; color: #666;">(Baseline: ${departmentBaselines[deptName]}%)</span></label>
           <input type="range" min="50" max="150" value="${sliderValue}" step="10" id="${id}">
@@ -882,24 +906,25 @@
       const deptName = departments.find(d => d.replace(/\s|&/g, "") === slider.id);
       const id = slider.id;
       const val = parseInt(slider.value);
-      const circle = document.getElementById(`circle-${id}`);
+      const canvasId = `canvas-${id}`;
       const impact = document.getElementById(`impact-${id}`);
       
-      let circleClass;
+      let color;
       
+      // Department Logic: Red for cuts (<100%), Green for increases (>100%)
       if (val < 100) {
-        circleClass = "cut-slider-circle";
-        slider.style.background = '#FF5733'; // For thumb consistency
+        color = "#FF5733"; // Red
+        slider.style.background = '#FF5733';
       } else if (val > 100) {
-        circleClass = "increase-slider-circle";
+        color = "#4CAF50"; // Green
         slider.style.background = '#4CAF50';
       } else {
-        circleClass = "neutral-slider-circle";
+        color = "#1a73e8"; // Blue
         slider.style.background = '#1a73e8';
       }
       
-      circle.className = `slider-circle ${circleClass}`;
-      circle.textContent = `${val}%`;
+      // Draw the Canvas Circle
+      drawFilledCircle(canvasId, `${val}%`, color);
       
       if (deptName) {
         impact.innerHTML = getImpactText(deptName, val);
@@ -1207,21 +1232,19 @@
   });
 
   resetBtn.addEventListener("click", () => {
-      // Custom text prompt replacement for alert/confirm
-      const action = prompt("Type 'year' to reset the current year's choices (tax, departments, non-required projects), or 'all' to reset the entire simulation:", "").toLowerCase();
-      
-      if (action === 'year') {
-          // If the year is reset, apply the penalty only if it hasn't been applied by slider changes already
-          handleCommitmentOverride(); 
-          resetYearChoices();
-      } else if (action === 'all') {
-          const confirmReset = prompt("Are you sure you want to reset the ENTIRE simulation? Type 'confirm' to proceed.", "").toLowerCase();
-          if (confirmReset === 'confirm') {
-              resetGame();
-          }
-      } else {
-          return;
-      }
+    const action = prompt("Type 'year' to reset the current year's choices (tax, departments, non-required projects), or 'all' to reset the entire simulation:", "").toLowerCase();
+    
+    if (action === 'year') {
+        handleCommitmentOverride(); 
+        resetYearChoices();
+    } else if (action === 'all') {
+        const confirmReset = prompt("Are you sure you want to reset the ENTIRE simulation? Type 'confirm' to proceed.", "").toLowerCase();
+        if (confirmReset === 'confirm') {
+            resetGame();
+        }
+    } else {
+        return;
+    }
   });
 
   taxRateInput.addEventListener("input", () => {
@@ -1236,7 +1259,11 @@
   });
 
   // --- Initialization ---
-  resetGame();
+  // FIX: Wait for fonts to be ready before drawing on the canvas
+  document.fonts.ready.then(() => {
+    console.log("Fonts loaded, starting game.");
+    resetGame();
+  });
 
 </script>
 </body>
