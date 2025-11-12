@@ -91,7 +91,7 @@
   /* --- Sliders --- */
   .slider-card { 
     display: flex; 
-    align-items: flex-start; 
+    align-items: center; /* Vertically center all items in the row */
     margin-bottom: 20px; 
     padding: 20px; 
     border-radius: 10px; 
@@ -514,7 +514,7 @@
     
     <div class="slider-content" style="width: 100%;">
       <label><strong>Annual Property Tax Adjustment</strong></label>
-      <p style="font-size:0.9em;color:#555;margin-bottom:10px;">The slider is the tax change for *this year*. A **3%** adjustment covers inflation (net 0% change on service levels).</p>
+      <p style="font-size:0.9em;color:#555;margin-bottom:10px;">The slider is the tax change for *this year*. A **3%** adjustment covers inflation.</p>
       
       <!-- Container for ALL Tax elements: Annual Circle, Slider, Cumulative Display -->
       <div id="taxAdjusterContainer"> 
@@ -711,7 +711,7 @@
       // Determine font size based on canvas size
       let fontSize = size === 80 ? 18 : 14; 
       
-      // FIX: Explicitly set Montserrat font for all canvas text
+      // CRITICAL FIX: Ensure Montserrat is always used for canvas text
       ctx.font = `bold ${fontSize}px Montserrat`; 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
