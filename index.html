@@ -400,9 +400,9 @@
   
   /* --- Mobile Adjustments (Floater Fixes Applied Here) --- */
   @media (max-width: 850px) {
+    /* --- FLOATER SIZE REDUCTION --- */
     .floating-controls { 
-        /* FIX: Made floater smaller by reducing vertical padding further */
-        padding: 8px 10px 0; 
+        padding: 5px 10px 0; /* Reduced top padding */
     }
     .floating-action-row {
         flex-wrap: wrap; 
@@ -411,29 +411,49 @@
         padding-bottom: 5px; 
     }
     .section { 
-        /* Ensure max clearance on small screens */
-        padding-bottom: 220px; 
+        padding-bottom: 240px; /* Increased clearance for smaller floater */
         padding-left: 15px;
         padding-right: 15px;
     }
     
     /* Mobile-specific order and width */
-    #statusDisplay { order: 1; margin: 0; min-width: 100%; } 
-    #reserveGroup { order: 2; margin: 0; flex-wrap: wrap; justify-content: space-between; }
-    #reserveDisplayContainer { flex-grow: 1; margin-bottom: 10px; text-align: center; }
+    #statusDisplay { 
+        order: 1; 
+        margin: 0; 
+        flex: 1 1 100%; /* Ensure status display is always full width */
+    } 
     
-    /* FIX: Make reserve buttons full width (100%) on mobile */
-    #reserveBtn, #useReserveBtn { flex: 1 1 100%; min-width: unset; }
+    /* --- RESERVE GROUP FIX --- */
+    #reserveGroup { 
+        order: 2; 
+        margin: 0; 
+        width: 100%; /* Force reserve group to full width */
+        flex-wrap: wrap; 
+        justify-content: flex-start; /* Align contents left */
+        gap: 8px; /* Consistent gap */
+    }
+    
+    /* RESERVE DISPLAY: MUST BE 100% WIDTH */
+    #reserveDisplayContainer { 
+        flex: 1 1 100%; /* Force display container to be full width */
+        margin-bottom: 0; /* Remove extra space below display */
+        text-align: center; 
+    }
+
+    /* RESERVE BUTTONS: MUST BE 100% WIDTH, STACKED */
+    #reserveBtn, #useReserveBtn { 
+        flex: 0 0 100%; /* CRITICAL: Fixed basis to 100% to ensure clean stacking and full width */
+        min-width: unset; 
+    }
     
     /* Main Actions Group: FIX: Sets Proceed and Reset side-by-side with consistent sizing */
     .main-actions-group { 
         order: 3; 
-        flex-direction: row; /* Changed from column to row for side-by-side */
+        flex-direction: row; 
         width: 100%; 
-        gap: 10px; /* Space between side-by-side buttons */
+        gap: 10px; 
         justify-content: space-between;
     }
-    /* FIX: Ensures action buttons take exactly half the width */
     .main-actions-group .button {
         min-width: unset; 
         flex: 1 1 50%; 
@@ -1009,11 +1029,12 @@
     reserveBtn.style.display = (displaySurplus > 0 && !isCommitted) ? "inline-block" : "none";
     reserveBtn.disabled = isCommitted; 
     
+    // useReserveBtn is enabled if there is a shortfall AND reserve is available AND not committed
+    useReserveBtn.style.display = (displayShortfall > 0 && reserve > 0 && !isCommitted) ? "inline-block" : "none";
+    useReserveBtn.disabled = isCommitted; 
+
     // nextYearBtn is only visible if shortfall is 0 (balanced or surplus)
     nextYearBtn.style.display = displayShortfall === 0 ? "inline-block" : "none";
-    
-    // useReserveBtn is enabled if there is a shortfall AND reserve is available AND not committed
-    useReserveBtn.disabled = !(displayShortfall > 0 && reserve > 0 && !isCommitted);
     
     // Update guidance based on new status
     updateGuidance(displayShortfall, displaySurplus, isCommitted); 
