@@ -91,13 +91,20 @@
   /* --- Sliders --- */
   .slider-card { 
     display: flex; 
-    align-items: flex-start; /* Aligned to the top of the content */
+    /* ADDED GAP/SPACING FOR BETTER VISUAL SEPARATION */
+    align-items: flex-start; 
     margin-bottom: 20px; 
     padding: 20px; 
     border-radius: 10px; 
     background: #f9f9f9; 
     box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
   }
+  
+  /* FIX: Add spacing after the circle for better alignment */
+  .slider-card .slider-circle { 
+    margin-right: 20px; 
+  }
+  
   .slider-card .slider-content {
     /* Ensure department sliders take full width */
     width: 100%;
@@ -126,7 +133,7 @@
     font-size: 1.2em; 
     color: white; 
     flex-shrink: 0;
-    margin: 0; /* Important: remove old margin-right */
+    margin: 0; 
   }
   
   #cumulativeTaxDisplay {
@@ -196,6 +203,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      text-align: center; /* Ensure internal text is centered */
   }
   
   /* CRITICAL (REQUIRED) PROJECT BUTTON STYLE */
@@ -205,6 +213,11 @@
       font-weight: 700;
       color: white; 
       box-shadow: 0 4px 0 0 #B71C1C; 
+  }
+  
+  /* === CRITICAL PROJECT STYLING: Dollar amount white === */
+  .project-btn.required .project-cost {
+      color: white; 
   }
   
   /* HOVER EFFECT */
@@ -251,8 +264,8 @@
       color: #FFD700; 
   }
   
-  .project-btn.required .project-cost {
-      color: #FFD700; 
+  .project-btn.required.selected .project-cost {
+      color: white; /* Keep white for required even when selected */
   }
   
   /* Highlight critical text */
@@ -267,12 +280,17 @@
       width: 100%; 
   }
   
+  /* === CRITICAL DEADLINE TEXT COLOR: Yellow highlight === */
+  .project-btn.required .required-text, 
+  .project-btn.required.selected .required-text {
+      color: #fcd34d !important; /* Yellow for visibility */
+      border-top-color: white !important; 
+  }
+  
   .project-btn.selected .required-text {
       border-top-color: #FFD700;
   }
-  .project-btn.required .required-text {
-      border-top-color: white !important; 
-  }
+  
 
 
   /* --- Floating Controls (Fixed position and flex layout) --- */
@@ -361,10 +379,11 @@
     flex-shrink: 0; 
     min-width: 150px; 
     transition: background 0.2s ease;
-    /* CENTERING TEXT: Added flex properties */
+    /* FIX: CENTERING TEXT on buttons */
     display: flex; 
     align-items: center;
     justify-content: center;
+    text-align: center;
   }
   .button:disabled {
       opacity: 0.5;
@@ -398,7 +417,7 @@
     flex-shrink: 0;
   }
   
-  /* --- Mobile Adjustments --- */
+  /* --- Mobile Adjustments (Floater Fixes Applied Here) --- */
   @media (max-width: 850px) {
     .floating-controls { 
         /* Made floater smaller by reducing vertical padding */
@@ -416,26 +435,27 @@
         padding-left: 15px;
         padding-right: 15px;
     }
+    
     /* Mobile-specific order and width */
-    /* Status Display & Reserve Group still take up the top rows */
     #statusDisplay { order: 1; margin: 0; min-width: 100%; } 
     #reserveGroup { order: 2; margin: 0; flex-wrap: wrap; justify-content: space-between; }
     #reserveDisplayContainer { flex-grow: 1; margin-bottom: 10px; text-align: center; }
-    #reserveBtn, #useReserveBtn { flex: 1 1 45%; min-width: unset; }
     
-    /* Main Actions Group: Now stacks buttons vertically (Proceed then Reset) */
+    /* FIX: Make reserve buttons full width (100%) on mobile */
+    #reserveBtn, #useReserveBtn { flex: 1 1 100%; min-width: unset; }
+    
+    /* Main Actions Group: Stacks buttons vertically (Proceed then Reset) */
     .main-actions-group { 
         order: 3; 
         flex-direction: column; 
         width: 100%; 
         gap: 10px; /* Space between stacked buttons */
     }
-    /* Ensure action buttons take full width on mobile */
+    /* FIX: Ensure action buttons take full length on mobile */
     .main-actions-group .button {
         min-width: 100%; 
+        flex: 1 1 100%; /* Ensure they are full length */
     }
-    
-    /* Removed the previous #resetBtn mobile override which set its order to -1 */
     
     .button { min-width: auto; }
     #guidanceText { padding: 5px 0 10px; }
@@ -461,6 +481,8 @@
     #cumulativeTaxDisplay {
         order: 3; /* Put Net Change at the bottom */
     }
+    
+    /* Reset Button is the last button in the main-actions-group, fulfilling "bottom of floater" */
   }
 </style>
 </head>
@@ -480,15 +502,14 @@
 
   <!-- TAX ADJUSTER CARD - MODIFIED STRUCTURE -->
   <div class="slider-card">
+    <!-- FIX: Removed the temporary margin-right from slider-circle in the element, now handled in CSS -->
+    <div class="slider-circle neutral-slider-circle" id="taxAnnualCircle">3%</div>
     <div class="slider-content" style="width: 100%;">
       <label><strong>Annual Property Tax Adjustment</strong></label>
       <p style="font-size:0.9em;color:#555;margin-bottom:10px;">The slider is the tax change for *this year*. A **3%** adjustment covers inflation (net 0% change on service levels).</p>
       
       <!-- Container for ALL Tax elements: Annual Circle, Slider, Cumulative Display -->
       <div id="taxAdjusterContainer"> 
-          <!-- Annual Adjustment Circle (Left) -->
-          <div class="slider-circle neutral-slider-circle" id="taxAnnualCircle">3%</div>
-          
           <!-- Slider Input (Center) -->
           <input type="range" id="taxRate" min="0" max="25" value="3">
           
@@ -521,7 +542,7 @@
             <button class="button" id="reserveBtn" style="display:none;">Add Surplus to Reserve</button>
         </div>
         
-        <!-- Main Actions Group now contains both Next Year and Reset for proper stacking on mobile -->
+        <!-- Main Actions Group: Order is Proceed then Reset, which naturally puts Reset at the bottom on mobile -->
         <div class="main-actions-group">
             <button class="button" id="nextYearBtn" style="display:none;">Proceed to Next Year</button>
             <button class="button" id="resetBtn">Reset Year</button>
@@ -807,6 +828,7 @@
       
       let sliderValue = departmentBaselines[deptName];
       
+      // Note: The slider-circle now has margin-right handled in the CSS
       card.innerHTML = `
         <div class="slider-circle neutral-slider-circle" id="circle-${id}">100%</div>
         <div class="slider-content">
